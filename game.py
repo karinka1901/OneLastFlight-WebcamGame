@@ -80,12 +80,12 @@ class Game:
         self.cloud_idle_img = pygame.transform.scale(pygame.image.load("assets/sprites/cloud_idle.png").convert_alpha(), (80, 55))
         self.is_blowing = False
 
-    def spawn_bug(self):
+    def spawn_bug(self): #spawns bugs
         x = self.width
         y = random.randint(20, self.height - self.bug_h - 100) #dont spawn on the bottowm of the screen
         self.bugs.append([x, y, random.randint(0, len(self.bug_images) - 1)]) 
 
-    def reset_game(self):
+    def reset_game(self): #resets all game variables to their initial state for a new playthrough
         self.bird_y = self.height // 2
         self.velocity = 0
         self.distance = 0
@@ -94,7 +94,7 @@ class Game:
         self.bug_spawn_timer = 0
         self.game_over = False
 
-    def countdown(self):
+    def countdown(self): #handles the 3-2-1 countdown before the game starts
         self.countdown_timer += 1
         if self.countdown_timer >= self.countdown_duration:
             self.countdown_timer = 0
@@ -107,10 +107,10 @@ class Game:
         countdown_text = self.font_large.render(str(self.countdown_value), True, (112, 130, 156))
         self.screen.blit(countdown_text, (self.width // 2 - countdown_text.get_width() // 2, self.height // 2 - 16))
 
-    def update(self, blowing):
-        if self.game_over:
-            self.velocity += 5
-            self.bird_y += self.velocity
+    def update(self, blowing): 
+        if self.game_over: # bird falls down when game over
+            self.velocity += 5 
+            self.bird_y += self.velocity 
             return
         
         self.is_blowing = blowing
@@ -125,7 +125,7 @@ class Game:
             self.game_over = True
             return
 
-        if blowing:
+        if blowing: #bird flaps the wings faster when blowing
             self.velocity = self.lift
             self.bird_anim_speed = 6
         else:
@@ -142,8 +142,8 @@ class Game:
             self.bird_y = self.height - self.bird_h
             self.velocity = 0
 
-        # Scroll
-        self.background_offset = (self.background_offset + self.scroll_speed) % self.width
+        # infinite scroll
+        self.background_offset = (self.background_offset + self.scroll_speed) % self.width 
 
         # Animate bird wings
         self.bird_frame += 1 
