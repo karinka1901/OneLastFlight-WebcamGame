@@ -1,7 +1,7 @@
 import cv2 as cv
 import pygame
 import random
-from detection import FaceDetector
+from face_detector import FaceDetector
 
 
 class Game:
@@ -60,6 +60,12 @@ class Game:
         self.game_started = False
         self.game_over = False
 
+        # Countdown
+        self.countdown_active = False
+        self.countdown_value = 0
+        self.countdown_timer = 0
+        self.countdown_duration = 30  #1 sec
+
         # Face Detection
         self.detector = FaceDetector()
         self.camera = cv.VideoCapture(0)
@@ -87,6 +93,19 @@ class Game:
         self.bugs = []
         self.bug_spawn_timer = 0
         self.game_over = False
+
+    def countdown(self):
+        self.countdown_timer += 1
+        if self.countdown_timer >= self.countdown_duration:
+            self.countdown_timer = 0
+            self.countdown_value -= 1
+            if self.countdown_value <= 0:
+                self.countdown_active = False
+                self.game_started = True
+                return
+
+        countdown_text = self.font_large.render(str(self.countdown_value), True, (112, 130, 156))
+        self.screen.blit(countdown_text, (self.width // 2 - countdown_text.get_width() // 2, self.height // 2 - 16))
 
     def update(self, blowing):
         if self.game_over:
@@ -161,10 +180,13 @@ class Game:
         self.screen.blit(self.background, (self.width - self.background_offset, self.background_y))
 
         if not self.game_started:
-            start_text = self.font_large.render("One Last Flight", True, (112, 130, 156))
-            self.screen.blit(start_text, (self.width // 2 - start_text.get_width() // 2, self.height // 2 - 20))
-            prompt_text = self.font.render("Press Enter to start", True, (112, 130, 156))
-            self.screen.blit(prompt_text, (self.width // 2 - prompt_text.get_width() // 2, self.height // 2 + 20))
+            if self.countdown_active:
+                self.countdown()
+            else:
+                start_text = self.font_large.render("One Last Flight", True, (112, 130, 156))
+                self.screen.blit(start_text, (self.width // 2 - start_text.get_width() // 2, self.height // 2 - 20))
+                prompt_text = self.font.render("Press Enter to start", True, (112, 130, 156))
+                self.screen.blit(prompt_text, (self.width // 2 - prompt_text.get_width() // 2, self.height // 2 + 20))
             pygame.display.flip()
             return
     
@@ -210,8 +232,10 @@ class Game:
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                     if self.game_over:
                         self.reset_game()
-                    elif not self.game_started:
-                        self.game_started = True
+                    elif not self.game_started and not self.countdown_active:
+                        self.countdown_active = True
+                        self.countdown_value = 3
+                        self.countdown_timer = 0
 
             blowing = False
             ret, frame = self.camera.read()
@@ -221,7 +245,7 @@ class Game:
                 self.detector.draw_mouth(frame)
                 blowing = expression == "blowing"
                 gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-                cv.imshow("Camera", cv.resize(frame, (200, 150)))
+                cv.imshow("Camera", cv.resize(frame, (150, 110)))
                 cv.waitKey(1)
             if self.game_started:
                 self.update(blowing)

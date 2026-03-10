@@ -29,7 +29,7 @@ class FaceDetector:
         
         ratio = mouth_width / (mouth_height + 1e-6)
 
-        print(f"W: {mouth_width:.1f}  H: {mouth_height:.1f}  R: {ratio:.2f}")
+        # print(f"W: {mouth_width:.1f}  H: {mouth_height:.1f}  R: {ratio:.2f}")
 
         # Blowing = small width, small height, points clustered
         if mouth_width < 40 and mouth_height < 15:
